@@ -3,7 +3,7 @@
     <?php
 
         //Split word file by \n character and store in array dict
-        $wordfile = file_get_contents('/homes/nrol223/HTML/CS316/A2/words.txt');
+        $wordfile = file_get_contents('words.txt');
         $dict = explode("\n", $wordfile);
 
         //Alphabet used to generate regex prompt
