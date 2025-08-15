@@ -1,3 +1,11 @@
+<?php
+    session_start();
+    //Start session, reset when "Reset Solve Assistant" is clicked
+
+    if (isset($_POST['SolverReset'])) {
+        session_unset();
+    }
+?>
 <html lang="en">
 
     <?php
@@ -61,11 +69,21 @@
                 return $outputRegex;
         }
 
-        //Start session, reset when "Reset Solve Assistant" is clicked
-        session_start();
-        if (isset($_POST['SolverReset'])) {
-            session_unset();
-        }
+        function checkLetterConflict($endExcludeSession, $refreshGuess){
+            foreach($refreshGuess as $letter){
+                    
+                foreach ($endExcludeSession as $excIndex=>$excStatus){
+                        
+                            if($letter == $excIndex){
+                                return true;
+                                
+                                break;
+                            }   
+                    }
+                }
+            }
+
+
 
         //CLASS USED WITH PHP OBJECT for printing each guess and its exact letters
         class SessionHistory{
@@ -128,16 +146,15 @@
         <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
         <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
-        <link rel="stylesheet" href="word.css">
+        <link rel="stylesheet" href="wordle-styles.css">
         <link rel="stylesheet" href="chrome-extension://ihcjicgdanjaechkgeegckofjjedodee/app/content-style.css">
     </head>
 
     <body data-new-gr-c-s-check-loaded="14.1223.0" data-gr-ext-installed="" style="background-color:black; width:825px; margin:auto">
         &lt; class="ui segment inverted black center aligned"&gt;
-
-            <div class="ui attached segment center aligned inverted black;">
-                <h1>Word(le) Solving Assistant </h1>
-            </div>
+            <h1 class="ui center aligned header" style="color: hsl(313, 100.00%, 61.00%); font-family:impact; font-size:100px; margin-bottom:-30px;">Pink Wordle Solver</h1>
+            <h2 class="ui center aligned header" style="color: white;">A Wordle solver... but pink.</h2>
+            
                 <!--Script that converts input to capital letter and auto switches to next input box-->
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
@@ -158,11 +175,11 @@
                         }
                     });
                 </script>
-            <div class="ui segment inverted grey left aligned">
-                Enter letters which matched in the 5 blanks provided.<br>
-                Place exact matches in their correct position, and toggle on the checkbox below them.<br>
-                Remote select any letters which <i>cannot</i> be used in the word below.<br>
-            </div>
+            <ol class="ui inverted list left aligned" style="color:white; font-size:20px;">
+                <li>Place <span style="color:rgb(108,169,101); font-weight:bold;">green</span> letters in their correct position and toggle the checkbox below.</li>
+                <li>Enter <span style="color:rgb(200,182,83); font-weight:bold;">yellow</span> letters into any available box.</li>
+                <li>Exclude <span style="color:rgb(120,124,127); font-weight:bold;">gray</span> letters by selecting from the <b>"Letters to Exclude"</b> table.</li>
+            </ol>
         <form id="nextGuess" method="POST" action="">
             <table style="font-size:45px; margin:auto; width:200px">
                 <?php 
@@ -179,8 +196,7 @@
                     if(isset($_POST['exact'])){
                         $refreshExact = ['unchecked', 'unchecked', 'unchecked', 'unchecked', 'unchecked']; //Stores states of all checkboxes
                         $_SESSION["exactList"][]=$_POST['exact']; //Adds list of exact checkboxes to session array of all exact selections
-                        print "Exact added for real!";
-                        $endExactSession = end($_SESSION["exactList"]); //Set current exact mathces to whatever is at the end of the session exact list
+                        $endExactSession = end($_SESSION["exactList"]); //Set current exact matches to whatever is at the end of the session exact list
                         
                         //Since only the checked boxes are stored in the exactList, some indexes can be skipped. This makes sure that only those indexes that were POSTed
                         //are changed to "checked" for the current exact array.
@@ -237,64 +253,92 @@
                 <!--Table for guess letters and exact match checkboxes-->
                 <tbody >
                     <tr>
-                        <td> <input class="ng input" name="guess[0]" style="background-color:black; border-color:white; color: hsl(313, 100.00%, 61.00%); font-family:impact; text-align:center;" maxlength="1" size="1" tabindex="1" value="<?php echo $refreshGuess[0]; ?>"></td>
-                        <td> <input class="ng input" name="guess[1]" style="background-color:black; border-color:white; color: hsl(313, 100.00%, 61.00%); font-family:impact; text-align:center;" maxlength="1" size="1" tabindex="2" value="<?php echo $refreshGuess[1]; ?>"></td>
-                        <td> <input class="ng input" name="guess[2]" style="background-color:black; border-color:white; color: hsl(313, 100.00%, 61.00%); font-family:impact; text-align:center;" maxlength="1" size="1" tabindex="3" value="<?php echo $refreshGuess[2]; ?>"></td>
-                        <td> <input class="ng input" name="guess[3]" style="background-color:black; border-color:white; color: hsl(313, 100.00%, 61.00%); font-family:impact; text-align:center;" maxlength="1" size="1" tabindex="4" value="<?php echo $refreshGuess[3]; ?>"></td>
-                        <td> <input class="ng input" name="guess[4]" style="background-color:black; border-color:white; color: hsl(313, 100.00%, 61.00%); font-family:impact; text-align:center;" maxlength="1" size="1" tabindex="5" value="<?php echo $refreshGuess[4]; ?>"></td>
+                        <td> <input class="ng input" name="guess[0]" style="background-color:black; border-color:white; color: hsl(313, 100.00%, 61.00%); font-family:impact; text-align:center; width:100px; height:100px;" maxlength="1" size="1" tabindex="1" value="<?php echo $refreshGuess[0]; ?>"></td>
+                        <td> <input class="ng input" name="guess[1]" style="background-color:black; border-color:white; color: hsl(313, 100.00%, 61.00%); font-family:impact; text-align:center; width:100px; height:100px;" maxlength="1" size="1" tabindex="2" value="<?php echo $refreshGuess[1]; ?>"></td>
+                        <td> <input class="ng input" name="guess[2]" style="background-color:black; border-color:white; color: hsl(313, 100.00%, 61.00%); font-family:impact; text-align:center; width:100px; height:100px;" maxlength="1" size="1" tabindex="3" value="<?php echo $refreshGuess[2]; ?>"></td>
+                        <td> <input class="ng input" name="guess[3]" style="background-color:black; border-color:white; color: hsl(313, 100.00%, 61.00%); font-family:impact; text-align:center; width:100px; height:100px;" maxlength="1" size="1" tabindex="4" value="<?php echo $refreshGuess[3]; ?>"></td>
+                        <td> <input class="ng input" name="guess[4]" style="background-color:black; border-color:white; color: hsl(313, 100.00%, 61.00%); font-family:impact; text-align:center; width:100px; height:100px;" maxlength="1" size="1" tabindex="5" value="<?php echo $refreshGuess[4]; ?>"></td>
                     </tr>
                     <tr>
-                        <td> <input class="ui checkbox" type="checkbox" name="exact[0]" <?php echo ((isset($_POST['exact']))&&($refreshExact[0]=='checked'))? 'checked':''  ?>></td>
-                        <td> <input class="ui checkbox" type="checkbox" name="exact[1]" <?php echo ((isset($_POST['exact']))&&($refreshExact[1]=='checked'))? 'checked':''  ?>></td>
-                        <td> <input class="ui checkbox" type="checkbox" name="exact[2]" <?php echo ((isset($_POST['exact']))&&($refreshExact[2]=='checked'))? 'checked':''  ?>></td>
-                        <td> <input class="ui checkbox" type="checkbox" name="exact[3]" <?php echo ((isset($_POST['exact']))&&($refreshExact[3]=='checked'))? 'checked':''  ?>></td>
-                        <td> <input class="ui checkbox" type="checkbox" name="exact[4]" <?php echo ((isset($_POST['exact']))&&($refreshExact[4]=='checked'))? 'checked':''  ?>></td>
+                        <td>
+                            <label for="exact0" style="font-size:20px; font-weight:bold; color:white; margin-left:12px;"> Exact: </label>
+                            <input id="exact0" class="ui checkbox" type="checkbox" name="exact[0]" <?php echo ((isset($_POST['exact']))&&($refreshExact[0]=='checked'))? 'checked':''  ?>>
+                        </td>
+                        <td>
+                            <label for="exact1" style="font-size:20px; font-weight:bold; color:white; margin-left:12px;"> Exact: </label>
+                            <input id="exact1" class="ui checkbox" type="checkbox" name="exact[1]" <?php echo ((isset($_POST['exact']))&&($refreshExact[1]=='checked'))? 'checked':''  ?>>
+                        </td>
+                        <td>
+                            <label for="exact2" style="font-size:20px; font-weight:bold; color:white; margin-left:12px;"> Exact: </label>
+                            <input id="exact2" class="ui checkbox" type="checkbox" name="exact[2]" <?php echo ((isset($_POST['exact']))&&($refreshExact[2]=='checked'))? 'checked':''  ?>>
+                        </td>
+                        <td>
+                            <label for="exact3" style="font-size:20px; font-weight:bold; color:white; margin-left:12px;"> Exact: </label>
+                            <input id="exact3" class="ui checkbox" type="checkbox" name="exact[3]" <?php echo ((isset($_POST['exact']))&&($refreshExact[3]=='checked'))? 'checked':''  ?>>
+                        </td>
+                        <td>
+                            <label for="exact4" style="font-size:20px; font-weight:bold; color:white; margin-left:12px;"> Exact: </label>
+                            <input id="exact4" class="ui checkbox" type="checkbox" name="exact[4]" <?php echo ((isset($_POST['exact']))&&($refreshExact[4]=='checked'))? 'checked':''  ?>>
+                        </td>
                     </tr>
                 </tbody>
             </table>
 
         <!--All the elements for checkboxes for letter exclusion-->
-        <div class=" ui segment inverted">
-            <div class="ui label attached inverted grey large top left">Letters to Exclude</div>
-            <div class="ui horizontal segments" style="text-align:center; font-weight:bold; font-family:verdana;">
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white;">A<br><input type="checkbox" name="exclude[A]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["A"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white;">B<br><input type="checkbox" name="exclude[B]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["B"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">C<br><input type="checkbox" name="exclude[C]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["C"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">D<br><input type="checkbox" name="exclude[D]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["D"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">E<br><input type="checkbox" name="exclude[E]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["E"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">F<br><input type="checkbox" name="exclude[F]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["F"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">G<br><input type="checkbox" name="exclude[G]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["G"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">H<br><input type="checkbox" name="exclude[H]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["H"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">I<br><input type="checkbox" name="exclude[I]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["I"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">J<br><input type="checkbox" name="exclude[J]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["J"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">K<br><input type="checkbox" name="exclude[K]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["K"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">L<br><input type="checkbox" name="exclude[L]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["L"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">M<br><input type="checkbox" name="exclude[M]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["M"]=='checked'))? 'checked':''  ?>></div>
+        <div class="ui segment inverted">
+            <div class="ui label attached inverted pink left large">Letters to Exclude</div>
+            <div style="padding-top: 20px; margin-bottom:-15px;">
+                <div class="ui horizontal segments" style="text-align:center; font-weight:bold; font-family:verdana;">
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white;">A<br><input type="checkbox" name="exclude[A]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["A"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white;">B<br><input type="checkbox" name="exclude[B]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["B"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white">C<br><input type="checkbox" name="exclude[C]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["C"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white">D<br><input type="checkbox" name="exclude[D]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["D"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white">E<br><input type="checkbox" name="exclude[E]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["E"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white">F<br><input type="checkbox" name="exclude[F]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["F"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white">G<br><input type="checkbox" name="exclude[G]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["G"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white">H<br><input type="checkbox" name="exclude[H]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["H"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white">I<br><input type="checkbox" name="exclude[I]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["I"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white">J<br><input type="checkbox" name="exclude[J]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["J"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white">K<br><input type="checkbox" name="exclude[K]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["K"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white">L<br><input type="checkbox" name="exclude[L]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["L"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted" style="background-color:black; border-color:white">M<br><input type="checkbox" name="exclude[M]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["M"]=='checked'))? 'checked':''  ?>></div>
+                </div>
+                <div class="ui horizontal segments" style="text-align:center; font-weight:bold; font-family:verdana">
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">N<br><input type="checkbox" name="exclude[N]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["N"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">O<br><input type="checkbox" name="exclude[O]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["O"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">P<br><input type="checkbox" name="exclude[P]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["P"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">Q<br><input type="checkbox" name="exclude[Q]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["Q"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">R<br><input type="checkbox" name="exclude[R]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["R"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">S<br><input type="checkbox" name="exclude[S]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["S"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">T<br><input type="checkbox" name="exclude[T]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["T"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">U<br><input type="checkbox" name="exclude[U]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["U"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">V<br><input type="checkbox" name="exclude[V]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["V"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">W<br><input type="checkbox" name="exclude[W]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["W"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">X<br><input type="checkbox" name="exclude[X]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["X"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">Y<br><input type="checkbox" name="exclude[Y]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["Y"]=='checked'))? 'checked':''  ?>></div>
+                    <div class="ui segment letter inverted " style="background-color:black; border-color:white">Z<br><input type="checkbox" name="exclude[Z]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["Z"]=='checked'))? 'checked':''  ?>></div>
             </div>
-            <div class="ui horizontal segments" style="text-align:center; font-weight:bold; font-family:verdana">
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">N<br><input type="checkbox" name="exclude[N]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["N"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">O<br><input type="checkbox" name="exclude[O]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["O"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">P<br><input type="checkbox" name="exclude[P]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["P"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">Q<br><input type="checkbox" name="exclude[Q]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["Q"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">R<br><input type="checkbox" name="exclude[R]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["R"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">S<br><input type="checkbox" name="exclude[S]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["S"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">T<br><input type="checkbox" name="exclude[T]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["T"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">U<br><input type="checkbox" name="exclude[U]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["U"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">V<br><input type="checkbox" name="exclude[V]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["V"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">W<br><input type="checkbox" name="exclude[W]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["W"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">X<br><input type="checkbox" name="exclude[X]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["X"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">Y<br><input type="checkbox" name="exclude[Y]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["Y"]=='checked'))? 'checked':''  ?>></div>
-                <div class="ui segment letter inverted " style="background-color:black; border-color:white">Z<br><input type="checkbox" name="exclude[Z]" <?php echo ((isset($_POST['exclude']))&&($refreshExclude["Z"]=='checked'))? 'checked':''  ?>></div>
             </div>
-            <!--Primary code for input formatting, regex formatting, and testing against the dictionary for results-->
-            <?php
-                //Initializing base case arrays
-                $currGuess = array("","","","",""); //submitted letters
-                $exactGuess = array("off","off","off","off","off"); //which letters were checked as exact matches (on/off)
-                $outputRegex=""; //Stores the regex to be greped
+        </div>
+        <!--Primary code for input formatting, regex formatting, and testing against the dictionary for results-->
+        <?php
+        
+            //Initializing base case arrays
+            $currGuess = array("","","","",""); //submitted letters
+            $exactGuess = array("off","off","off","off","off"); //which letters were checked as exact matches (on/off)
+            $outputRegex=""; //Stores the regex to be greped
 
-                //When check button pressed, begin processing for regex
-                if (isset($_POST['check']) && ($outputRegex=="")){
+            //When check button pressed, begin processing for regex
+            if (isset($_POST['check'])){
+                ?><div class="ui segment inverted" style="margin-top:15px;"> <?php
+                if (isset($_POST['exclude']) && (checkLetterConflict($endExcludeSession, $refreshGuess) == true)){
+                    ?>
+                    <div class="ui label attached inverted pink large left">Error</div>
+                    <!--Default message if no matches found-->
+                    <div class="ui inverted left aligned" style="color:white; font-size:20px;">One of your guessed letters was marked as an exclusion. Fix the conflict and try again.</div>
+                    <?php
+                }
+                else if ($outputRegex==""){
 
                     //Save session variables
                     $_SESSION["list"][]=$_POST['guess'];
@@ -449,93 +493,86 @@
                         $matchIndex++;
                     }
                     $numMatches=count($matches);
-                ?> 
-        </div>
-        <div class="ui segment inverted">
-             <div class="ui label attached inverted grey large"><?=$numMatches?> possible matching words.</div>
-                <table class='ui inverted pink large celled striped fixed table'>
 
-                    <!--Print match table-->
-                    <?php
+                        if ($numMatches!=0){ ?>
+                        <div class="ui label attached inverted pink large top left"><?=$numMatches?> possible matching words.</div>
+                            <table class='ui inverted pink large celled striped fixed table'>
 
-                        $matchIndex = 0;
+                                <!--Print match table-->
+                                <?php
 
-                        if ($outputRegex != ""){
-                            while ($matchIndex < $numMatches){
-                                echo '<tr>';
-                                    for($i=0;$i<8;$i++){
-                                        if($matchIndex<$numMatches){
-                                            echo '<td>';
-                                            echo $matches[$matchIndex];
-                                            echo '</td>';
-                                            $matchIndex++;
-                                        }
-                                        else{
-                                            echo "<td></td>";
-                                            if($i==7){
-                                                break;
-                                            }
-                                        }
+                                    $matchIndex = 0;
+                        
+                                        while ($matchIndex < $numMatches){
+                                            echo '<tr>';
+                                                for($i=0;$i<8;$i++){
+                                                    if($matchIndex<$numMatches){
+                                                        echo '<td>';
+                                                        echo $matches[$matchIndex];
+                                                        echo '</td>';
+                                                        $matchIndex++;
+                                                    }
+                                                    else{
+                                                        echo "<td></td>";
+                                                        if($i==7){
+                                                            break;
+                                                        }
+                                                    }
 
-                                    }
-                                echo '</tr>';
-                                    
-                            }
-                        }                              
+                                                }
+                                            echo '</tr>';
+                                                
+                                        }                              
 
-                    ?>
-                </table>
-                <?php 
+                                ?>
+                            </table>
+                        <?php 
                         }
-                    else{
-                ?>
-                <!--Default message before check is clicked-->
-                <div class="ui " id="nm">No matching words found.</div>
-                    <?php 
-                    }
-                    ?>
-                </div>
-            </div>
+                        else if ($outputRegex != ""){
+                        ?>
+                        <div class="ui label attached inverted pink large top left">Error</div>
+                            <!--Default message if no matches found-->
+                            <div class="ui inverted left aligned" style="color:white; font-size:20px;">No matching words found. Check your guesses and try again.</div>
+                                <?php 
+                        }
+                }
+                ?>        </div><?php
+            }
+
+        ?>
+        </div>
 
             <!--Design logic for buttons-->
-            <div class="ui segment inverted">
-                <div class="ui horizontal segments">
-                    <!--Submit-->
-                    <div class="ui segment inverted black align right">
-                        <button class="ui button centered" type="submit" name="check">Check Word</button>
-                    </div>
-                    <!--Reset solver-->
-                    <div class="ui segment inverted black align left">
-                        <button type="submit" name="SolverReset" valu="yes" class="ui button small centered">Reset Solve Assistant</button>
-                    </div>
-                </div>
+            <div class="ui segment inverted center aligned">
+                <button class="ui button inverted pink" type="submit" name="check">Check Word</button>
+            <!--Reset solver-->
+                <button class="ui button inverted pink" type="submit" name="SolverReset" valu="yes">Reset Solve Assistant</button>
             </div>
             <!--Debugging Info-->
             <div class="ui segment inverted">
-                <div class="ui label attached top inverted large grey">Debugging Info</div>
-                    <div class="ui segment inverted black" style="border-style:solid; border-color: transparent transparent yellow transparent">
-                        Using regex:
-                        <?php 
-                                if (isset($_POST['check'])&&(isset($_POST['exclude']) || isset($_POST['guess']))){
-                                    
-                            ?>
-                        <span id="regex" style="color:yellow"><?= $outputRegex ?></span>
-                        <?php
-                                }
+                <div class="ui label attached top inverted large pink">Debugging Info</div>
+                <div class="ui segment inverted black" style="color:yellow">
+                    Using regex:
+                    <?php 
+                            if (isset($_POST['check'])&&(isset($_POST['exclude']) || isset($_POST['guess']))){
+                                
                         ?>
+                    <span id="regex"><?= $outputRegex ?></span>
+                    <?php
+                            }
+                    ?>
 
-                        </div>
-                    <div class="ui segment inverted black" style="border-style:solid; border-color: transparent transparent yellow transparent">
-                        Dictionary Size: 
-                        <span id="dictSize" style="color:yellow"><?= count($dict)?></span>
-                    </div>  
+                </div>
+                <div class="ui segment inverted black">
+                    Dictionary Size: 
+                    <span id="dictSize" style="color:yellow"><?= count($dict)?></span>
                 </div>  
-            </div>
+            </div>  
             <!--PREVIOUS ATTEMPTS USING SESSION-->
             <div class="ui inverted segment">
                 <?php if(isset($_POST['check'])){?>
-                <div class="ui label attached inverted grey large"> Previous guesses in the session:</div>
-                <table class="ui inverted blue celled striped table">
+                <div class="ui label attached inverted pink large top left"> Previous guesses in the session</div>
+                <table class="ui inverted pink celled striped table">
                     <thead>
                         <tr>
                             <th>Attempt</th>
