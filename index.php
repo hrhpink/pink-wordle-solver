@@ -101,9 +101,9 @@
 
             //Check to see which checkboxes were checked for the exact letters and print the corresponding letter of the guess
             function printExact(){
-                if(isset($_SESSION["exactList"])){
-
+                
                     foreach ($_SESSION["exactList"][$this->attempt-1] as $index=>$value){
+
                         if($value=="on"){
 
                             switch ($index){
@@ -134,7 +134,7 @@
                         }
 
                         }
-                }
+                
                     
                 echo "</td></tr>";
             }
@@ -223,6 +223,13 @@
                             }
                         }
                     }
+                    else{
+                     //Used to put blank values in previous guess table
+                        print("We set the blank exactList!");
+                        $_SESSION["exactList"][]=["0"=>"off"];
+                        $endExactSession = end($_SESSION["exactList"]); //Set current exact matches to whatever is at the end of the session exact list
+                    }
+                    
                     //If any exclusions are posted
                     if (isset($_POST['exclude'])){
 
@@ -333,7 +340,7 @@
                 ?><div class="ui segment inverted" style="margin-top:15px;"> <?php
                 if (isset($_POST['exclude']) && (checkLetterConflict($endExcludeSession, $refreshGuess) == true)){
                     ?>
-                    <div class="ui label attached inverted pink large left">Error</div>
+                    <div class="ui label attached inverted pink large left">Exclusion Error</div>
                     <!--Default message if no matches found-->
                     <div class="ui inverted left aligned" style="color:white; font-size:20px;">One of your guessed letters was marked as an exclusion. Fix the conflict and try again.</div>
                     <?php
@@ -395,10 +402,7 @@
 
                     $count = 0; //loop variable to check for whether the end of the exclusion array has been reached
 
-                    //Used to put blank values in previous guess table
-                    if(!isset($_POST['exact'])){
-                        $_SESSION["exactList"][]=["0"=>"off", "1"=>"off", "2"=>"off", "3"=>"off","4"=>"off"]; 
-                    }
+
 
                     //If any exclusions were marked, begin additional processing for regex
                     if(isset($_POST['exclude'])){
@@ -530,7 +534,7 @@
                         }
                         else if ($outputRegex != ""){
                         ?>
-                        <div class="ui label attached inverted pink large top left">Error</div>
+                        <div class="ui label attached inverted pink large top left">Matching Error</div>
                             <!--Default message if no matches found-->
                             <div class="ui inverted left aligned" style="color:white; font-size:20px;">No matching words found. Check your guesses and try again.</div>
                                 <?php 
@@ -592,7 +596,9 @@
                             $guess->attempt = $curAttempt;
                             $guess->guessList = $guessArray;
                             $guess->printGuess();
-                            $guess->printExact();
+                            if(isset($_SESSION["exactList"])){
+                                $guess->printExact();
+                            }
                             $curAttempt++;
                         
                         }
