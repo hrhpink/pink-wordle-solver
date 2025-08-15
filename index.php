@@ -340,7 +340,7 @@
                 ?><div class="ui segment inverted" style="margin-top:15px;"> <?php
                 if (isset($_POST['exclude']) && (checkLetterConflict($endExcludeSession, $refreshGuess) == true)){
                     ?>
-                    <div class="ui label attached inverted pink large left">Exclusion Error</div>
+                    <div class="ui label attached inverted pink large top left">Exclusion Error</div>
                     <!--Default message if no matches found-->
                     <div class="ui inverted left aligned" style="color:white; font-size:20px;">One of your guessed letters was marked as an exclusion. Fix the conflict and try again.</div>
                     <?php
